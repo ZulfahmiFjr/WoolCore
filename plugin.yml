@@ -1,0 +1,18 @@
+name: WoolCore
+main: WoolCore\Main
+version: WC
+api: 3
+
+commands:
+ profile:
+     description: Melihat profile anda di server
+ survivaltp:
+     description: Animasi teleport ke world Survival
+ lobby:
+     description: Teleport ke Lobby server
+ reward:
+     description: Mengambil hadiah dari absen harian
+ rankinfo:
+     description: Melihat info rank yang tersedia
+ leaderboard:
+     description: Command set Leaderboard

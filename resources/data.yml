@@ -1,0 +1,54 @@
+---
+messages:
+- Selamat datang di server Wool Craft Season 2 Indonesia§r§f.
+- Bermainlah dengan jujur dan baik§r§f!
+- Ingin mendapat hadiah§r§f? §e§oAyo vote di website §r§fhttps://bit.ly/vote-wool
+- Ingin membuka shop gunakan command §r§f/shop
+- Info rank silahkan lihat dengan command §r§f/rankinfo
+- Jika ada bug silahkan laporkan ke staff§r§f!
+- Untuk mengetahui update server gabung grup WhatsApp dengan link §r§fhttps://bit.ly/group-wool
+- Gunakan command §r§f/lobby §e§ountuk kembali ke lobby server§r§f!
+text:
+- §1§l|§r§4§l§6§l{player}§4§l--------------§1§l|§r
+- §1§l|§r§4§l-§6§l{player}§4§l-------------§1§l|§r
+- §1§l|§r§4--§l§6§l{player}§4§l------------§1§l|§r
+- §1§l|§r§4---§l§6§l{player}§4§l-----------§1§l|§r
+- §1§l|§r§4----§l§6§l{player}§4§l----------§1§l|§r
+- §1§l|§r§4-----§l§6§l{player}§4§l---------§1§l|§r
+- §1§l|§r§4------§l§6§l{player}§4§l--------§1§l|§r
+- §1§l|§r§4-------§l§6§l{player}§4§l-------§1§l|§r
+- §1§l|§r§4--------§l§6§l{player}§4§l------§1§l|§r
+- §1§l|§r§4---------§l§6§l{player}§4§l-----§1§l|§r
+- §1§l|§r§4----------§l§6§l{player}§4§l----§1§l|§r
+- §1§l|§r§4-----------§l§6§l{player}§4§l---§1§l|§r
+- §1§l|§r§4------------§l§6§l{player}§4§l--§1§l|§r
+- §1§l|§r§4-------------§l§6§l{player}§4§l-§1§l|§r
+- §1§l|§r§4--------------§l§6§l{player}§4§l§1§l|§r
+join-ui: §e§oSelamat Datang di server Wool Craft §fS2 §cIndo§fnesia§r§f.[-]§f[-]§e§oKami
+  mempunyai beberapa fitur saat ini yang menarik berikut fitur tersebut§r§f:[-]§l§9»»
+  §r§fSurvival[-]§l§9»» §r§fShop[-]§l§9»» §r§fRank (Free & Donate)[-]§l§9»» §r§fEvent[-]§l§9»»
+  §r§fVote Reward[-]§e§oFitur fitur tersebut nantinya akan terus diupdate dan ditambah
+  lagi§r§f.[-]§e[-]§e§oUntuk mengetahui update terbaru tentang server Wool Craft§r§f,
+  §e§oanda bisa bergabung dengan grup WhatsApp kami§r§f, §e§olink§r§f: https://bit.ly/group-wool[-]§e[-]§f§l!!RULES!!§r[-]§c§lX
+  §r§fDilarang promosi server lain.[-]§c§lX §r§fDilarang bermain curang/cheat.[-]§c§lX
+  §r§fDilarang grief rumah member/staff.[-]§c§lX §r§fDilarang menghina agama, budaya,
+  dan ras.[-]§c§lX §r§fDilarang kill player sembarangan.[-]§c§lX §r§fDilarang menerima
+  gamemode creative dari staff.[-]§e[-]§f§l---§eENJOYYY§!!!§f---
+leaderboard:
+  online:
+  - -10.500000
+  - 65
+  - -26.500000
+  money:
+  - -7.500000
+  - 65
+  - -12.500000
+  kill:
+  - 8.500000
+  - 65
+  - -12.500000
+  level:
+  - 11.500000
+  - 65
+  - -26.500000
+...
