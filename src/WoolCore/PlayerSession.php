@@ -46,9 +46,9 @@ class PlayerSession extends Player
 
     public function saveTeleport(Position $position)
     {
-        $this->teleport(Main::getInstance()->getServer()->getLevelByName("transfare")->getSafeSpawn());
+        $this->teleport(Main::getInstance()->getServer()->getWorldManager()->getWorldByName("transfare")->getSafeSpawn());
         $pk = new ChangeDimensionPacket();
-        $pk->position = Main::getInstance()->getServer()->getLevelByName("transfare")->getSafeSpawn();
+        $pk->position = Main::getInstance()->getServer()->getWorldManager()->getWorldByName("transfare")->getSafeSpawn();
         $pk->dimension = DimensionIds::THE_END;
         $pk->respawn = true;
         $this->sendDataPacket($pk);

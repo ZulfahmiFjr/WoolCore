@@ -136,7 +136,7 @@ class Main extends PluginBase implements Listener
                     return true;
                 }
                 $this->getServer()->loadLevel("Survival");
-                $p->teleport($this->getServer()->getLevelByName("Survival")->getSafeSpawn());
+                $p->teleport($this->getServer()->getWorldManager()->getWorldByName("Survival")->getSafeSpawn());
                 break;
             }
             case "lobby":{

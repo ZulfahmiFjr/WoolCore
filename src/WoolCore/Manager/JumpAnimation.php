@@ -68,7 +68,7 @@ class JumpAnimation extends Animation
             }
             case 3:{
                 Main::getInstance()->getServer()->loadLevel("Survival");
-                $p->saveTeleport(Main::getInstance()->getServer()->getLevelByName("Survival")->getSafeSpawn());
+                $p->saveTeleport(Main::getInstance()->getServer()->getWorldManager()->getWorldByName("Survival")->getSafeSpawn());
                 $p->setGameRule('naturalregeneration', true);
                 $p->removeAllEffects();
                 $p->setMode(0);
