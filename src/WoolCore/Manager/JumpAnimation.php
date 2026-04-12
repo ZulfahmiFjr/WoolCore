@@ -67,7 +67,8 @@ class JumpAnimation extends Animation
                 break;
             }
             case 3:{
-                Main::getInstance()->getServer()->loadLevel("Survival");
+                $wm = Main::getInstance()->getServer()->getWorldManager();
+                $wm->loadWorld("Survival");
                 $p->saveTeleport(Main::getInstance()->getServer()->getWorldManager()->getWorldByName("Survival")->getSafeSpawn());
                 $p->setGameRule('naturalregeneration', true);
                 $p->removeAllEffects();

@@ -10,6 +10,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\Command;
 use pocketmine\player\Player;
 use pocketmine\item\Item;
+use pocketmine\world\WorldCreationOptions;
 use pocketmine\event\player\PlayerCreationEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerMoveEvent;
@@ -52,6 +53,10 @@ class Main extends PluginBase implements Listener
     private $leaderboardset = [];
     private $particles = [];
     private $breakTimes = [];
+    private int $entityId;
+
+    private Config $stats;
+    private Config $data;
 
     protected function onEnable(): void
     {
@@ -69,8 +74,10 @@ class Main extends PluginBase implements Listener
         $level = $this->getServer()->getWorldManager()->getDefaultWorld();
         $level->setTime(7000);
         $level->stopTime();
-        if (!$this->getServer()->loadLevel("transfare")) {
-            $this->getServer()->generateLevel("transfare");
+        $wm = $this->getServer()->getWorldManager();
+        if (!$wm->loadWorld("transfare")) {
+            $wm->generateWorld("transfare", WorldCreationOptions::create());
+            $wm->loadWorld("transfare");
         }
         $this->getScheduler()->scheduleRepeatingTask(new Broadcaster($this), 30 * 20);
         $this->getScheduler()->scheduleRepeatingTask(new CallbackUpdate([$this, "onUpdate"], []), 1);
@@ -135,7 +142,8 @@ class Main extends PluginBase implements Listener
                     }
                     return true;
                 }
-                $this->getServer()->loadLevel("Survival");
+                $wm = $this->getServer()->getWorldManager();
+                $wm->loadWorld("Survival");
                 $p->teleport($this->getServer()->getWorldManager()->getWorldByName("Survival")->getSafeSpawn());
                 break;
             }

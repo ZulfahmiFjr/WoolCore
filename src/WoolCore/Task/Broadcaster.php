@@ -9,13 +9,16 @@ use WoolCore\Main;
 
 class Broadcaster extends Task
 {
+    private Main $pl;
+    private int $length;
+
     public function __construct(Main $pl)
     {
         $this->pl = $pl;
         $this->length = -1;
     }
 
-    public function onRun($tick): void
+    public function onRun(): void
     {
         $data = (new Config($this->pl->getDataFolder()."data.yml", Config::YAML))->getAll();
         $this->length = $this->length + 1;

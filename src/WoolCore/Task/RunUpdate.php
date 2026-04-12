@@ -16,7 +16,7 @@ class RunUpdate extends Task
         $this->type = $type;
     }
 
-    public function onRun(int $currentTick): void
+    public function onRun(): void
     {
         $pl = Main::getInstance();
         if ($this->type === 1) {

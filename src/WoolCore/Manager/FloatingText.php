@@ -2,16 +2,20 @@
 
 namespace WoolCore\Manager;
 
-use pocketmine\level\particle\FloatingTextParticle;
+use pocketmine\world\particle\FloatingTextParticle;
 use pocketmine\math\Vector3;
+use pocketmine\world\World;
 use WoolCore\Main;
 
 class FloatingText extends FloatingTextParticle
 {
+    private World $world;
+    private Vector3 $pos;
+
     public function __construct(Main $pl, Vector3 $pos)
     {
-        parent::__construct($pos, "", "");
-        $this->level = $pl->getServer()->getWorldManager()->getDefaultWorld();
+        parent::__construct("", "");
+        $this->world = $pl->getServer()->getWorldManager()->getDefaultWorld();
         $this->pos = $pos;
     }
 
@@ -28,7 +32,7 @@ class FloatingText extends FloatingTextParticle
 
     public function update(): void
     {
-        $this->level->addParticle($this);
+        $this->world->addParticle($this);
     }
 
 }
