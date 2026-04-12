@@ -21,7 +21,7 @@ class RemoveScreen extends Task
         $this->pos = $pos;
     }
 
-    public function onRun($tick)
+    public function onRun($tick): void
     {
         $pk = new PlayStatusPacket();
         $pk->status = 3;
