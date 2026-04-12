@@ -8,7 +8,7 @@ use pocketmine\entity\Effect;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\network\mcpe\protocol\ActorEventPacket;
-use pocketmine\level\Position;
+use pocketmine\world\Position;
 use WoolCore\Main;
 use WoolCore\Task\SendTitle;
 

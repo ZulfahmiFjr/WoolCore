@@ -35,8 +35,8 @@ class OpeningAnimation extends Animation
         }
         switch ($this->animationPhase) {
             case 0:{
-                $defaultLevel = Main::getInstance()->getServer()->getDefaultLevel();
-                if ($defaultLevel->getFolderName() !== $p->getLevel()->getFolderName()) {
+                $defaultLevel = Main::getInstance()->getServer()->getWorldManager()->getDefaultWorld();
+                if ($defaultLevel->getFolderName() !== $p->getWorld()->getFolderName()) {
                     $this->animationPhase = 1;
                     break;
                 }

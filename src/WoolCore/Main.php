@@ -66,7 +66,7 @@ class Main extends PluginBase implements Listener
                 $this->particles[$type] = new FloatingText($this, new Vector3($pos[0], $pos[1], $pos[2]));
             }
         }
-        $level = $this->getServer()->getDefaultLevel();
+        $level = $this->getServer()->getWorldManager()->getDefaultWorld();
         $level->setTime(7000);
         $level->stopTime();
         if (!$this->getServer()->loadLevel("transfare")) {
@@ -122,13 +122,13 @@ class Main extends PluginBase implements Listener
                 $form = new SimpleForm(function (Player $p, $result) {
                 });
                 $form->setTitle("§e§lYour Profile");
-                $form->setContent("§l§9»» §r§e§oName§r§f: {$p->getName()}\n\n§l§9»» §r§e§oMoney§r§f: {$money}"."§l§9$"."§r\n\n§l§9»» §r§e§oRank§r§f: {$rank}\n\n§l§9»» §r§e§oOnline Time§r§f: {$online} minutes§r\n\n§l§9»» §r§e§oLevel§r§f: {$this->getLevel($p)}\n\n§l§9»» §r§e§oKill§r§f: {$this->getKill($p)}\n\n§l§9»» §r§e§oDeath§r§f: {$this->getDeath($p)}\n\n§l§9»» §r§e§oBuild§r§f: {$this->getBuild($p)}\n\n§l§9»» §r§e§oBreak§r§f: {$this->getBreak($p)}");
+                $form->setContent("§l§9»» §r§e§oName§r§f: {$p->getName()}\n\n§l§9»» §r§e§oMoney§r§f: {$money}"."§l§9$"."§r\n\n§l§9»» §r§e§oRank§r§f: {$rank}\n\n§l§9»» §r§e§oOnline Time§r§f: {$online} minutes§r\n\n§l§9»» §r§e§oLevel§r§f: {$this->getWorld($p)}\n\n§l§9»» §r§e§oKill§r§f: {$this->getKill($p)}\n\n§l§9»» §r§e§oDeath§r§f: {$this->getDeath($p)}\n\n§l§9»» §r§e§oBuild§r§f: {$this->getBuild($p)}\n\n§l§9»» §r§e§oBreak§r§f: {$this->getBreak($p)}");
                 $p->sendForm($form);
                 break;
             }
             case "survivaltp":{
-                $defaultLevel = $this->getServer()->getDefaultLevel();
-                if ($defaultLevel->getFolderName() === $p->getLevel()->getFolderName()) {
+                $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
+                if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName()) {
                     if ($p->getMode() === 0) {
                         $p->setGameRule('naturalregeneration', false);
                         $p->actionAnimation(new JumpAnimation($p));
@@ -144,7 +144,7 @@ class Main extends PluginBase implements Listener
                     $p->sendMessage($notp);
                     return false;
                 }
-                $p->teleport($this->getServer()->getDefaultLevel()->getSafeSpawn());
+                $p->teleport($this->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn());
                 $p->sendMessage("§f§l[§6WC§f] §r§e§oAnda berhasil teleport ke Lobby server§r§f.");
                 break;
             }
@@ -222,7 +222,7 @@ class Main extends PluginBase implements Listener
     {
         $p = $e->getPlayer();
         $e->setJoinMessage("");
-        $p->teleport($this->getServer()->getDefaultLevel()->getSafeSpawn());
+        $p->teleport($this->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn());
         if (!$p instanceof SpecterPlayer) {
             $p->setGameRule('naturalregeneration', false);
             $p->actionAnimation(new OpeningAnimation($p));
@@ -276,7 +276,7 @@ class Main extends PluginBase implements Listener
                 } else {
                     $rank = $plwrank->getPlayerRank($p->getName())->getName();
                 }
-                $level = $this->getLevel($p);
+                $level = $this->getWorld($p);
                 if ($level === null) {
                     $level = "N/A";
                 }
@@ -294,8 +294,8 @@ class Main extends PluginBase implements Listener
                 $this->setScoreboardEntry($p, 10, "§•§awool-craft-s2.tk", "objektName");
                 $this->setScoreboardEntry($p, 11, "§•§a19213", "objektName");
             }
-            $defaultLevel = $this->getServer()->getDefaultLevel();
-            if ($defaultLevel->getFolderName() === $p->getLevel()->getFolderName()) {
+            $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
+            if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName()) {
                 if ($p->getY() < -10) {
                     $p->teleport($defaultLevel->getSafeSpawn()->add(0.5, 1, 0.5));
                 }
@@ -348,8 +348,8 @@ class Main extends PluginBase implements Listener
     public function onEntityDamage(EntityDamageEvent $e)
     {
         if (($p = $e->getEntity()) instanceof Player) {
-            $defaultLevel = $this->getServer()->getDefaultLevel();
-            if ($defaultLevel->getFolderName() === $p->getLevel()->getFolderName()) {
+            $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
+            if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName()) {
                 $e->setCancelled();
             }
         }
@@ -359,8 +359,8 @@ class Main extends PluginBase implements Listener
     {
         $stats = $this->stats;
         $p = $e->getPlayer();
-        $defaultLevel = $this->getServer()->getDefaultLevel();
-        if ($defaultLevel->getFolderName() === $p->getLevel()->getFolderName() && !$p->isOp()) {
+        $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
+        if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName() && !$p->isOp()) {
             $e->setCancelled();
         }
         if (!$e->isCancelled()) {
@@ -408,8 +408,8 @@ class Main extends PluginBase implements Listener
                 unset($this->breakTimes[$uuid]);
             } while (false);
         }
-        $defaultLevel = $this->getServer()->getDefaultLevel();
-        if ($defaultLevel->getFolderName() === $p->getLevel()->getFolderName() && !$p->isOp()) {
+        $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
+        if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName() && !$p->isOp()) {
             $e->setCancelled();
         }
         if (!$e->isCancelled()) {
@@ -423,8 +423,8 @@ class Main extends PluginBase implements Listener
     {
         $stats = $this->stats;
         $p = $e->getPlayer();
-        $defaultLevel = $this->getServer()->getDefaultLevel();
-        if ($defaultLevel->getFolderName() === $p->getLevel()->getFolderName()) {
+        $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
+        if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName()) {
             $e->setCancelled();
         }
     }
@@ -433,8 +433,8 @@ class Main extends PluginBase implements Listener
     {
         $stats = $this->stats;
         $p = $e->getEntity();
-        $defaultLevel = $this->getServer()->getDefaultLevel();
-        if ($defaultLevel->getFolderName() === $p->getLevel()->getFolderName()) {
+        $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
+        if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName()) {
             $e->setCancelled();
         }
     }
@@ -443,8 +443,8 @@ class Main extends PluginBase implements Listener
     {
         $stats = $this->stats;
         $p = $e->getPlayer();
-        $defaultLevel = $this->getServer()->getDefaultLevel();
-        if ($defaultLevel->getFolderName() === $p->getLevel()->getFolderName() && !$p->isOp()) {
+        $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
+        if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName() && !$p->isOp()) {
             $e->setCancelled();
         }
     }
@@ -453,8 +453,8 @@ class Main extends PluginBase implements Listener
     {
         $stats = $this->stats;
         $p = $e->getPlayer();
-        $defaultLevel = $this->getServer()->getDefaultLevel();
-        if ($defaultLevel->getFolderName() === $p->getLevel()->getFolderName()) {
+        $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
+        if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName()) {
             $e->setCancelled();
         }
     }
@@ -479,7 +479,7 @@ class Main extends PluginBase implements Listener
     public function onLevelChange(EntityLevelChangeEvent $e)
     {
         if (($p = $e->getEntity()) instanceof Player) {
-            if ($e->getTarget()->getFolderName() === $this->getServer()->getDefaultLevel()->getFolderName()) {
+            if ($e->getTarget()->getFolderName() === $this->getServer()->getWorldManager()->getDefaultWorld()->getFolderName()) {
                 $this->getScheduler()->scheduleDelayedTask(new RunUpdate($p, 1), 100);
             }
         }
@@ -547,12 +547,12 @@ class Main extends PluginBase implements Listener
 
     public function setTag(Player $p)
     {
-        $color = $this->getColor($this->getLevel($p));
-        $p->setDisplayName("§f§l".$this->getLevel($p)." §r§".$color.$p->getName());
+        $color = $this->getColor($this->getWorld($p));
+        $p->setDisplayName("§f§l".$this->getWorld($p)." §r§".$color.$p->getName());
         $p->save();
     }
 
-    public function getLevel(Player $p)
+    public function getWorld(Player $p)
     {
         if ($this->stats->exists(strtolower($p->getName()))) {
             return $this->stats->getAll()[strtolower($p->getName())]["level"];
@@ -581,7 +581,7 @@ class Main extends PluginBase implements Listener
             $stats->setNested($lowerName.".expcount", $stats->getAll()[$lowerName]["expcount"] + 32);
             $stats->save();
             $this->setTag($p);
-            $p->addTitle("§l§eLEVEL UP§r§f!!!", "§6§oLevel ".$this->getLevel($p), 1, 100, 50);
+            $p->addTitle("§l§eLEVEL UP§r§f!!!", "§6§oLevel ".$this->getWorld($p), 1, 100, 50);
         }
     }
 

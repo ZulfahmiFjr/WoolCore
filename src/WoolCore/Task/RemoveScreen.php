@@ -4,7 +4,7 @@ namespace WoolCore\Task;
 
 use pocketmine\scheduler\Task;
 use pocketmine\player\Player;
-use pocketmine\level\Position;
+use pocketmine\world\Position;
 use pocketmine\network\mcpe\protocol\PlayStatusPacket;
 use pocketmine\network\mcpe\protocol\ChangeDimensionPacket;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;

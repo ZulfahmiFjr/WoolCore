@@ -4,7 +4,7 @@ namespace WoolCore;
 
 use pocketmine\player\Player;
 use pocketmine\network\mcpe\protocol\GameRulesChangedPacket;
-use pocketmine\level\Position;
+use pocketmine\world\Position;
 use pocketmine\network\mcpe\protocol\ChangeDimensionPacket;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
 use WoolCore\Manager\Animation;
@@ -65,8 +65,8 @@ class PlayerSession extends Player
                 $this->startPos = 0;
                 $this->startAnimation = false;
             }
-            $defaultLevel = $pl->getServer()->getDefaultLevel();
-            if ($defaultLevel->getFolderName() === $this->getLevel()->getFolderName()) {
+            $defaultLevel = $pl->getServer()->getWorldManager()->getDefaultWorld();
+            if ($defaultLevel->getFolderName() === $this->getWorld()->getFolderName()) {
                 if ($this->getGamemode() !== 2) {
                     $this->setGamemode(2);
                 }
@@ -113,7 +113,7 @@ class PlayerSession extends Player
                 if (strlen($percent) === 1) {
                     $space = 3;
                 }
-                $pl->sendBossPacket($this, str_repeat(" ", $space)."§e§lLevel Bar§r\n\n§6§oLevel§r§f: ".$pl->getLevel($this)." | §6§oExp§r§f: ".$percent."%%%%", $pl->getExp($this), $pl->getExpCount($this));
+                $pl->sendBossPacket($this, str_repeat(" ", $space)."§e§lLevel Bar§r\n\n§6§oLevel§r§f: ".$pl->getWorld($this)." | §6§oExp§r§f: ".$percent."%%%%", $pl->getExp($this), $pl->getExpCount($this));
                 $pl->sendBossPacket($this, '', $pl->getExp($this), $pl->getExpCount($this), 4);
             }
         } else {
