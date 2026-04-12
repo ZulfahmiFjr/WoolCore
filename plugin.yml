@@ -1,18 +1,43 @@
 name: WoolCore
 main: WoolCore\Main
 version: WC
-api: 3
+api: 5.0.0
 
 commands:
  profile:
      description: Melihat profile anda di server
+     permission: woolcore.command.profile
+
  survivaltp:
      description: Animasi teleport ke world Survival
+     permission: woolcore.command.survivaltp
+
  lobby:
      description: Teleport ke Lobby server
+     permission: woolcore.command.lobby
+
  reward:
      description: Mengambil hadiah dari absen harian
+     permission: woolcore.command.reward
+
  rankinfo:
      description: Melihat info rank yang tersedia
+     permission: woolcore.command.rankinfo
+
  leaderboard:
      description: Command set Leaderboard
+     permission: woolcore.command.leaderboard
+
+permissions:
+  woolpay.command.profile:
+    default: true
+  woolpay.command.survivaltp:
+    default: true
+  woolpay.command.lobby:
+    default: true
+  woolpay.command.reward:
+    default: true
+  woolpay.command.rankinfo:
+    default: true
+  woolpay.command.leaderboard:
+    default: op
