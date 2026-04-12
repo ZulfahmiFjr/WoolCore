@@ -22,7 +22,7 @@ use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\entity\Effect;
 use pocketmine\event\player\PlayerBucketEmptyEvent;
-use pocketmine\event\entity\ExplosionPrimeEvent;
+use pocketmine\event\entity\EntityExplodeEvent;
 use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -429,13 +429,13 @@ class Main extends PluginBase implements Listener
         }
     }
 
-    public function onExplosionPrime(ExplosionPrimeEvent $e)
+    public function onEntityExplode(EntityExplodeEvent $e): void
     {
-        $stats = $this->stats;
-        $p = $e->getEntity();
-        $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
-        if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName()) {
-            $e->setCancelled();
+        $entity = $e->getEntity();
+        $world = $entity->getWorld();
+        $defaultWorld = $this->getServer()->getWorldManager()->getDefaultWorld();
+        if ($world->getFolderName() === $defaultWorld->getFolderName()) {
+            $e->setCancelled(true);
         }
     }
 
