@@ -58,7 +58,7 @@ class Main extends PluginBase implements Listener
         self::$instance = $this;
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->saveResource("data.yml");
-        $this->entityId = Entity::$entityCount++;
+        $this->entityId = Entity::nextRuntimeId();
         $this->data = new Config($this->getDataFolder()."/data.yml", Config::YAML);
         $this->stats = new Config($this->getDataFolder()."/stats.yml", Config::YAML, array());
         if (!empty($this->data->getAll()["leaderboard"])) {
