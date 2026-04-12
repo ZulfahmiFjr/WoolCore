@@ -26,7 +26,7 @@ use pocketmine\event\entity\EntityExplodeEvent;
 use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerInteractEvent;
-use pocketmine\event\entity\EntityLevelChangeEvent;
+use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\network\mcpe\protocol\AddActorPacket;
 use pocketmine\entity\Entity;
 use pocketmine\network\mcpe\protocol\RemoveActorPacket;
@@ -476,12 +476,16 @@ class Main extends PluginBase implements Listener
         }
     }
 
-    public function onLevelChange(EntityLevelChangeEvent $e)
+    public function onEntityTeleport(EntityTeleportEvent $e): void
     {
-        if (($p = $e->getEntity()) instanceof Player) {
-            if ($e->getTarget()->getFolderName() === $this->getServer()->getWorldManager()->getDefaultWorld()->getFolderName()) {
-                $this->getScheduler()->scheduleDelayedTask(new RunUpdate($p, 1), 100);
-            }
+        $entity = $e->getEntity();
+        if (!$entity instanceof Player) {
+            return;
+        }
+        $to = $e->getTo();
+        $defaultWorld = $this->getServer()->getWorldManager()->getDefaultWorld();
+        if ($to->getWorld()->getFolderName() === $defaultWorld->getFolderName()) {
+            $this->getScheduler()->scheduleDelayedTask(new RunUpdate($entity, 1), 100);
         }
     }
 
