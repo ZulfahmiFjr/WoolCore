@@ -88,7 +88,7 @@ class PlayerSession extends Player
                     }
                 }
                 if ($this->delayTicks >= 3) {
-                    $frames = $pl->data->get("text");
+                    $frames = $pl->getDataConfig()->get("text");
                     if ($this->stage === 10) {
                         if ($this->frame === -1) {
                             $this->stage = 11;

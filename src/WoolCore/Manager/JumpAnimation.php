@@ -15,7 +15,7 @@ use WoolCore\Task\SendTitle;
 
 class JumpAnimation extends Animation
 {
-    
+
     protected $pos;
     protected float $yaw;
     protected float $pitch;
@@ -25,7 +25,7 @@ class JumpAnimation extends Animation
     {
         parent::doAnimation();
         $p = $this->getPlayer();
-        $p->setGamemode(GameMode::SPECTATOR());
+        $p->setGamemode(GameMode::ADVENTURE());
         $p->extinguish();
         $p->addTitle("§e§oTeleporting§r§f...", "");
         $p->getEffects()->add(new EffectInstance(VanillaEffects::INVISIBILITY(), 999, 10, false));

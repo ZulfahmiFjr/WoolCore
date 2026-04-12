@@ -30,6 +30,7 @@ use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\network\mcpe\protocol\AddActorPacket;
+use pocketmine\entity\EntityIds;
 use pocketmine\entity\Entity;
 use pocketmine\network\mcpe\protocol\RemoveActorPacket;
 use pocketmine\network\mcpe\protocol\BossEventPacket;
@@ -364,7 +365,7 @@ class Main extends PluginBase implements Listener
         if (($p = $e->getEntity()) instanceof Player) {
             $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
             if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName()) {
-                $e->setCancelled();
+                $e->cancel();
             }
         }
     }
@@ -475,7 +476,9 @@ class Main extends PluginBase implements Listener
         $p = $e->getPlayer();
         $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
         if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName()) {
-            $e->setCancelled();
+            $p->getHungerManager()->setFood(20);
+            $p->getHungerManager()->setSaturation(20.0);
+            $p->getHungerManager()->setExhaustion(0.0);
         }
     }
 
@@ -511,24 +514,25 @@ class Main extends PluginBase implements Listener
 
     public function addBossBar(Player $p)
     {
-        $pk = new AddActorPacket();
-        $pk->entityRuntimeId = $this->entityId;
-        $pk->type = "minecraft:slime";
-        $pk->metadata = [
-         Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, ((1 << Entity::DATA_FLAG_INVISIBLE) | (1 << Entity::DATA_FLAG_IMMOBILE))],
-         Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, '']
-        ];
-        $pk->position = new Vector3();
-        $p->getNetworkSession()->sendDataPacket($pk);
+        // $pk = new AddActorPacket();
+        // $pk->entityRuntimeId = $this->entityId;
+        // $pk->type = "minecraft:slime";
+        // $pk->metadata = [
+        //  Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, ((1 << Entity::DATA_FLAG_INVISIBLE) | (1 << Entity::DATA_FLAG_IMMOBILE))],
+        //  Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, '']
+        // ];
+        // $pk->position = new Vector3();
+        // $p->getNetworkSession()->sendDataPacket($pk);
         $this->sendBossPacket($p, '', 0, 100, 0);
     }
 
     public function removeBossBar(Player $p)
     {
-        $this->sendBossPacket($p, '', 0, 100, 2);
-        $pk = new RemoveActorPacket();
-        $pk->entityUniqueId = $this->entityId;
-        $p->getNetworkSession()->sendDataPacket($pk);
+        $this->sendBossPacket($p, '', 0, 100, 4); // HIDE
+        // $this->sendBossPacket($p, '', 0, 100, 2);
+        // $pk = new RemoveActorPacket();
+        // $pk->entityUniqueId = $this->entityId;
+        // $p->getNetworkSession()->sendDataPacket($pk);
     }
 
     public function sendBossPacket(Player $p, string $title, float $loop, float $max, int $type = 0): void
