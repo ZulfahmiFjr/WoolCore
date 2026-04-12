@@ -29,15 +29,15 @@ commands:
      permission: woolcore.command.leaderboard
 
 permissions:
-  woolpay.command.profile:
+  woolcore.command.profile:
     default: true
-  woolpay.command.survivaltp:
+  woolcore.command.survivaltp:
     default: true
-  woolpay.command.lobby:
+  woolcore.command.lobby:
     default: true
-  woolpay.command.reward:
+  woolcore.command.reward:
     default: true
-  woolpay.command.rankinfo:
+  woolcore.command.rankinfo:
     default: true
-  woolpay.command.leaderboard:
+  woolcore.command.leaderboard:
     default: op
