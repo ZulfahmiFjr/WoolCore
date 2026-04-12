@@ -38,7 +38,7 @@ abstract class Form implements IForm
     {
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return $this->data;
     }

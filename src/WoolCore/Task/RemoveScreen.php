@@ -25,7 +25,7 @@ class RemoveScreen extends Task
     {
         $pk = new PlayStatusPacket();
         $pk->status = 3;
-        $this->p->sendDataPacket($pk);
+        $this->p->getNetworkSession()->sendDataPacket($pk);
         if ($this->pos instanceof Position) {
             $spawn = $this->pos;
             $this->p->teleport($spawn);
@@ -33,7 +33,7 @@ class RemoveScreen extends Task
             $pk->position = $this->pos;
             $pk->dimension = DimensionIds::OVERWORLD;
             $pk->respawn = true;
-            $this->p->sendDataPacket($pk);
+            $this->p->getNetworkSession()->sendDataPacket($pk);
             Main::getInstance()->getScheduler()->scheduleDelayedTask(new RemoveScreen($this->p), 40);
         }
     }

@@ -4,6 +4,8 @@ namespace WoolCore;
 
 use pocketmine\player\Player;
 use pocketmine\network\mcpe\protocol\GameRulesChangedPacket;
+use pocketmine\network\mcpe\protocol\types\BoolGameRule;
+use pocketmine\player\GameMode;
 use pocketmine\world\Position;
 use pocketmine\network\mcpe\protocol\ChangeDimensionPacket;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
@@ -39,11 +41,13 @@ class PlayerSession extends Player
         $animation->doAnimation();
     }
 
-    public function setGameRule($gamerule, $boolean)
+    public function setGameRule(string $gamerule, bool $boolean): void
     {
         $pk = new GameRulesChangedPacket();
-        $pk->gameRules = [$gamerule => [1, $boolean]];
-        $this->dataPacket($pk);
+        $pk->gameRules = [
+            $gamerule => new BoolGameRule($boolean, false)
+        ];
+        $this->getNetworkSession()->sendDataPacket($pk);
     }
 
     public function saveTeleport(Position $position)
@@ -53,7 +57,7 @@ class PlayerSession extends Player
         $pk->position = Main::getInstance()->getServer()->getWorldManager()->getWorldByName("transfare")->getSafeSpawn();
         $pk->dimension = DimensionIds::THE_END;
         $pk->respawn = true;
-        $this->sendDataPacket($pk);
+        $this->getNetworkSession()->sendDataPacket($pk);
         Main::getInstance()->getScheduler()->scheduleDelayedTask(new RemoveScreen($this, $position), 20);
     }
 
@@ -70,7 +74,7 @@ class PlayerSession extends Player
             $defaultLevel = $pl->getServer()->getWorldManager()->getDefaultWorld();
             if ($defaultLevel->getFolderName() === $this->getWorld()->getFolderName()) {
                 if ($this->getGamemode() !== 2) {
-                    $this->setGamemode(2);
+                    $this->setGamemode(GameMode::ADVENTURE());
                 }
                 if (!$this->reveseLoops) {
                     $this->loopTicks += 1;
@@ -108,7 +112,7 @@ class PlayerSession extends Player
                 $pl->sendBossPacket($this, '', $this->loopTicks, 100, 4);
             } else {
                 if ($this->getGamemode() !== 0 && !$this->isOp() && !$this->hasPermission("feature.creative")) {
-                    $this->setGamemode(0);
+                    $this->setGamemode(GameMode::SURVIVAL());
                 }
                 $percent = round(($pl->getExp($this) / $pl->getExpCount($this)) * 100);
                 $space = 4;

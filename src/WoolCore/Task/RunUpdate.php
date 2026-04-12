@@ -33,7 +33,7 @@ class RunUpdate extends Task
                 $plvote->getServer()->getAsyncPool()->submitTask(new GetTopVotersTask($plvote->apiKey));
             }
         } else {
-            $this->p->addTitle("§6§lWoolCore_v2", "§e§oWool Craft §fS2 §cIndo§fnesia");
+            $this->p->sendTitle("§6§lWoolCore_v2", "§e§oWool Craft §fS2 §cIndo§fnesia");
         }
     }
 

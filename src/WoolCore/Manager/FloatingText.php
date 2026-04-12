@@ -32,7 +32,7 @@ class FloatingText extends FloatingTextParticle
 
     public function update(): void
     {
-        $this->world->addParticle($this);
+        $this->world->addParticle($this->pos, $this);
     }
 
 }

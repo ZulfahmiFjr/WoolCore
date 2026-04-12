@@ -36,14 +36,18 @@ class Animation
 
     public function move()
     {
-        $pk = new MovePlayerPacket();
-        $pk->entityRuntimeId = $this->p->getId();
-        $pk->position = $this->pos;
-        $pk->pitch = $this->pitch;
-        $pk->yaw = $this->yaw;
-        $pk->headYaw = $this->yaw;
-        $pk->mode = 2;
-        $this->p->dataPacket($pk);
+        $pk = MovePlayerPacket::simple(
+            $this->p->getId(),   // actor runtime id
+            $this->pos,          // Vector3
+            $this->pitch,
+            $this->yaw,
+            $this->yaw,          // headYaw
+            MovePlayerPacket::MODE_NORMAL, // atau MODE_TELEPORT
+            false, // onGround (biasanya 0/false)
+            0, // riding actor id
+            0  // teleport cause
+        );
+        $this->p->getNetworkSession()->sendDataPacket($pk);
     }
 
 }

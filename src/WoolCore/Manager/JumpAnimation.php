@@ -3,9 +3,10 @@
 namespace WoolCore\Manager;
 
 use pocketmine\player\Player;
-use pocketmine\entity\EffectInstance;
-use pocketmine\entity\Effect;
+use pocketmine\entity\effect\VanillaEffects;
+use pocketmine\entity\effect\EffectInstance;
 use pocketmine\item\ItemFactory;
+use pocketmine\player\GameMode;
 use pocketmine\item\ItemIds;
 use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\world\Position;
@@ -14,16 +15,22 @@ use WoolCore\Task\SendTitle;
 
 class JumpAnimation extends Animation
 {
+    
+    protected $pos;
+    protected float $yaw;
+    protected float $pitch;
+    protected int $animationPhase = 0;
+
     public function doAnimation()
     {
         parent::doAnimation();
         $p = $this->getPlayer();
-        $p->setGameMode(3);
+        $p->setGamemode(GameMode::SPECTATOR());
         $p->extinguish();
         $p->addTitle("§e§oTeleporting§r§f...", "");
-        $p->addEffect(new EffectInstance(Effect::getEffect(Effect::INVISIBILITY), 999, 10, false, false));
+        $p->getEffects()->add(new EffectInstance(VanillaEffects::INVISIBILITY(), 999, 10, false));
         $this->animationPhase = 0;
-        $this->pos = $p->asVector3()->add(0, 1, 0);
+        $this->pos = $p->getPosition()->asVector3()->add(0, 1, 0);
         $this->y = $this->pos->y;
         $this->yaw = $p->yaw;
         $this->pitch = $p->pitch;
@@ -60,7 +67,7 @@ class JumpAnimation extends Animation
                     return true;
                 }
                 if ($this->pos->y >= $this->y + 20) {
-                    $p->addEffect(new EffectInstance(Effect::getEffect(Effect::BLINDNESS), 999, 1, false, false));
+                    $p->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 999, 1, false, false);
                 }
                 $this->pos->y = $this->pos->y + 0.6;
                 $this->move();
@@ -71,9 +78,9 @@ class JumpAnimation extends Animation
                 $wm->loadWorld("Survival");
                 $p->saveTeleport(Main::getInstance()->getServer()->getWorldManager()->getWorldByName("Survival")->getSafeSpawn());
                 $p->setGameRule('naturalregeneration', true);
-                $p->removeAllEffects();
+                $p->getEffects()->clear();
                 $p->setMode(0);
-                $p->setGamemode(0);
+                $p->setGamemode(GameMode::SURVIVAL());
                 return false;
             }
         }

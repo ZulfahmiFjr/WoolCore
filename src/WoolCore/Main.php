@@ -22,6 +22,7 @@ use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\entity\Effect;
+use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\event\player\PlayerBucketEmptyEvent;
 use pocketmine\event\entity\EntityExplodeEvent;
 use pocketmine\event\player\PlayerDropItemEvent;
@@ -100,6 +101,11 @@ class Main extends PluginBase implements Listener
     public static function getInstance(): Main
     {
         return self::$instance;
+    }
+
+    public function getDataConfig(): Config
+    {
+        return $this->data;
     }
 
     public function onCommand(CommandSender $p, Command $commad, string $label, array $args): bool
@@ -295,8 +301,8 @@ class Main extends PluginBase implements Listener
                 $this->setScoreboardEntry($p, 3, "§•§fRank: §a".$rank, "objektName");
                 $this->setScoreboardEntry($p, 4, "§•§fLevel: §a".$level, "objektName");
                 $this->setScoreboardEntry($p, 5, "§c", "objektName");
-                $this->setScoreboardEntry($p, 6, "§•§fPing: §a".$p->getPing(), "objektName");
-                $this->setScoreboardEntry($p, 7, "§•§fX: §a".floor($p->getX())." §fY: §a".floor($p->getY())." §fZ: §a".floor($p->getZ()), "objektName");
+                $this->setScoreboardEntry($p, 6, "§•§fPing: §a".$p->getNetworkSession()->getPing(), "objektName");
+                $this->setScoreboardEntry($p, 7, "§•§fX: §a".floor($p->getPosition()->getX())." §fY: §a".floor($p->getPosition()->getY())." §fZ: §a".floor($p->getPosition()->getZ()), "objektName");
                 $this->setScoreboardEntry($p, 8, "§•§fPlayers: §a".count($this->getServer()->getOnlinePlayers())."/".$this->getServer()->getMaxPlayers(), "objektName");
                 $this->setScoreboardEntry($p, 9, "§1", "objektName");
                 $this->setScoreboardEntry($p, 10, "§•§awool-craft-s2.tk", "objektName");
@@ -304,7 +310,7 @@ class Main extends PluginBase implements Listener
             }
             $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
             if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName()) {
-                if ($p->getY() < -10) {
+                if ($p->getPosition()->getY() < -10) {
                     $p->teleport($defaultLevel->getSafeSpawn()->add(0.5, 1, 0.5));
                 }
             }
@@ -396,11 +402,17 @@ class Main extends PluginBase implements Listener
                 $target = $e->getBlock();
                 $item = $e->getItem();
                 $expectedTime = ceil($target->getBreakTime($item) * 20);
-                if ($p->hasEffect(Effect::HASTE)) {
-                    $expectedTime *= 1 - (0.2 * $p->getEffect(Effect::HASTE)->getEffectLevel());
+                if ($p->getEffects()->has(VanillaEffects::HASTE())) {
+                    $effect = $p->getEffects()->get(VanillaEffects::HASTE());
+                    if ($effect !== null) {
+                        $expectedTime *= 1 - (0.2 * $effect->getAmplifier());
+                    }
                 }
-                if ($p->hasEffect(Effect::MINING_FATIGUE)) {
-                    $expectedTime *= 1 + (0.3 * $p->getEffect(Effect::MINING_FATIGUE)->getEffectLevel());
+                if ($p->getEffects()->has(VanillaEffects::MINING_FATIGUE())) {
+                    $effect = $p->getEffects()->get(VanillaEffects::MINING_FATIGUE());
+                    if ($effect !== null) {
+                        $expectedTime *= 1 + (0.3 * $effect->getAmplifier());
+                    }
                 }
                 $expectedTime -= 1;
                 $actualTime = ceil(microtime(true) * 20) - $this->breakTimes[$uuid = $p->getRawUniqueId()];
@@ -507,7 +519,7 @@ class Main extends PluginBase implements Listener
          Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, '']
         ];
         $pk->position = new Vector3();
-        $p->sendDataPacket($pk);
+        $p->getNetworkSession()->sendDataPacket($pk);
         $this->sendBossPacket($p, '', 0, 100, 0);
     }
 
@@ -516,7 +528,7 @@ class Main extends PluginBase implements Listener
         $this->sendBossPacket($p, '', 0, 100, 2);
         $pk = new RemoveActorPacket();
         $pk->entityUniqueId = $this->entityId;
-        $p->sendDataPacket($pk);
+        $p->getNetworkSession()->sendDataPacket($pk);
     }
 
     public function sendBossPacket(Player $p, string $title, float $loop, float $max, int $type = 0): void
@@ -644,7 +656,7 @@ class Main extends PluginBase implements Listener
         $pk = new SetScorePacket();
         $pk->type = 0;
         $pk->entries[$score] = $entry;
-        $p->sendDataPacket($pk);
+        $p->getNetworkSession()->sendDataPacket($pk);
     }
 
     public function createScoreboard(Player $p, $title, $objName, $slot = "sidebar", $order = 0)
@@ -655,14 +667,14 @@ class Main extends PluginBase implements Listener
         $pk->displayName = $title;
         $pk->criteriaName = "dummy";
         $pk->sortOrder = $order;
-        $p->sendDataPacket($pk);
+        $p->getNetworkSession()->sendDataPacket($pk);
     }
 
     public function removeScoreboard(Player $p, $objName)
     {
         $pk = new RemoveObjectivePacket();
         $pk->objectiveName = $objName;
-        $p->sendDataPacket($pk);
+        $p->getNetworkSession()->sendDataPacket($pk);
     }
 
     public function getLeaderBoard($type): string
@@ -682,7 +694,7 @@ class Main extends PluginBase implements Listener
             case "money":{
                 $plwpay = $this->getServer()->getPluginManager()->getPlugin("WoolPay");
                 if (!is_null($plwpay)) {
-                    $data = $plwpay->money->getAll();
+                    $data = $plwpay->getAllMoney();
                     $prefix = "§l§9$"."§r";
                 } else {
                     $data = null;
