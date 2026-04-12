@@ -10,6 +10,9 @@ use WoolVote\Task\GetTopVotersTask;
 
 class RunUpdate extends Task
 {
+    private Player $p;
+    private int $type;
+
     public function __construct(Player $p, $type = 0)
     {
         $this->p = $p;

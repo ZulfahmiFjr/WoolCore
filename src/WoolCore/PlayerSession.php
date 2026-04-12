@@ -12,14 +12,16 @@ use WoolCore\Task\RemoveScreen;
 
 class PlayerSession extends Player
 {
+    private float $y = 0;
+    private float $startPos = 0;
+    private bool $startAnimation = false;
+
     public $loopTicks = 0;
     public $reveseLoops = false;
     public $delayTicks = 0;
     public $frame = 0;
     public $stage = 0;
     public $mode = 1;
-    public $startPos = 0;
-    public $startAnimation = false;
 
     public function setMode($mode)
     {
@@ -118,11 +120,11 @@ class PlayerSession extends Player
             }
         } else {
             if ($this->startAnimation === false) {
-                $this->startPos = $this->y;
+                $this->startPos = $this->getPosition()->getY();
                 $this->startAnimation = true;
             }
-            $pl->sendBossPacket($this, "§e§oTeleporting§r§f...", $this->y - $this->startPos, 23);
-            $pl->sendBossPacket($this, '', $this->y - $this->startPos, 23, 4);
+            $pl->sendBossPacket($this, "§e§oTeleporting§r§f...", $this->getPosition()->getY() - $this->startPos, 23);
+            $pl->sendBossPacket($this, '', $this->getPosition()->getY() - $this->startPos, 23, 4);
         }
         return true;
     }

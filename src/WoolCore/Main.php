@@ -519,21 +519,27 @@ class Main extends PluginBase implements Listener
         $p->sendDataPacket($pk);
     }
 
-    public function sendBossPacket(Player $p, $title, $loop, $max, $type = 5)
+    public function sendBossPacket(Player $p, string $title, float $loop, float $max, int $type = 0): void
     {
-        $pk = new BossEventPacket();
-        $pk->bossEid = $this->entityId;
-        $pk->eventType = $type;
-        if ($type !== 4) {
-            $pk->title = $title;
+        $eid = $this->entityId;
+        $percent = $max > 0 ? $loop / $max : 0;
+        switch ($type) {
+            case 0: // SHOW
+                $pk = BossEventPacket::show($eid, $title, $percent);
+                break;
+            case 1: // UPDATE PERCENT
+                $pk = BossEventPacket::healthPercent($eid, $percent);
+                break;
+            case 2: // UPDATE TITLE
+                $pk = BossEventPacket::title($eid, $title);
+                break;
+            case 4: // HIDE
+                $pk = BossEventPacket::hide($eid);
+                break;
+            default:
+                return;
         }
-        if ($type === 0 || $type === 4) {
-            $pk->healthPercent = $loop / $max;
-            if ($type === 0) {
-                $pk->unknownShort = $pk->color = $pk->overlay = 0;
-            }
-        }
-        $p->sendDataPacket($pk);
+        $p->getNetworkSession()->sendDataPacket($pk);
     }
 
     public function getColor($level)
