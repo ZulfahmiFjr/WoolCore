@@ -15,10 +15,10 @@ use WoolCore\Task\SendTitle;
 
 class JumpAnimation extends Animation
 {
-
     protected $pos;
     protected float $yaw;
     protected float $pitch;
+    protected float $startY;
     protected int $animationPhase = 0;
 
     public function doAnimation()
@@ -29,61 +29,53 @@ class JumpAnimation extends Animation
         $p->extinguish();
         $p->addTitle("§e§oTeleporting§r§f...", "");
         $p->getEffects()->add(new EffectInstance(VanillaEffects::INVISIBILITY(), 999, 10, false));
-        $this->animationPhase = 0;
         $this->pos = $p->getPosition()->asVector3()->add(0, 1, 0);
-        $this->y = $this->pos->y;
-        $this->yaw = $p->yaw;
-        $this->pitch = $p->pitch;
-        $this->move();
+        $this->startY = $this->pos->y;
+        $this->yaw = $p->getLocation()->getYaw();
+        $this->pitch = $p->getLocation()->getPitch();
+        $this->animationPhase = 0;
     }
 
     public function onUpdate(): bool
     {
-        if (($p = $this->getPlayer()) === null) {
+        $p = $this->getPlayer();
+        if ($p === null) {
             return false;
         }
         switch ($this->animationPhase) {
-            case 0:{
-                if ($this->pos->y >= $this->y + 3) {
+            case 0:
+                $this->pos->y += 0.25;
+                if ($this->pos->y >= $this->startY + 3) {
                     $this->animationPhase = 1;
-                    return true;
                 }
-                $this->pos->y = $this->pos->y + 0.2;
-                $this->move();
                 break;
-            }
-            case 1:{
-                if ($this->pos->y <= $this->y) {
+            case 1:
+                $this->pos->y -= 0.25;
+                if ($this->pos->y <= $this->startY) {
                     $this->animationPhase = 2;
-                    return true;
                 }
-                $this->pos->y = $this->pos->y - 0.2;
-                $this->move();
                 break;
-            }
-            case 2:{
-                if ($this->pos->y >= $this->y + 25) {
+            case 2:
+                $this->pos->y += 0.7;
+                if ($this->pos->y >= $this->startY + 20) {
+                    $p->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 40, 1, false));
+                }
+                if ($this->pos->y >= $this->startY + 25) {
                     $this->animationPhase = 3;
-                    return true;
                 }
-                if ($this->pos->y >= $this->y + 20) {
-                    $p->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 999, 1, false, false);
-                }
-                $this->pos->y = $this->pos->y + 0.6;
-                $this->move();
                 break;
-            }
-            case 3:{
+            case 3:
                 $wm = Main::getInstance()->getServer()->getWorldManager();
                 $wm->loadWorld("Survival");
-                $p->saveTeleport(Main::getInstance()->getServer()->getWorldManager()->getWorldByName("Survival")->getSafeSpawn());
+                $target = $wm->getWorldByName("Survival")->getSafeSpawn();
+                $p->saveTeleport($target);
                 $p->setGameRule('naturalregeneration', true);
                 $p->getEffects()->clear();
                 $p->setMode(0);
                 $p->setGamemode(GameMode::SURVIVAL());
                 return false;
-            }
         }
+        $p->teleport($this->pos, $this->yaw, $this->pitch);
         return true;
     }
 
