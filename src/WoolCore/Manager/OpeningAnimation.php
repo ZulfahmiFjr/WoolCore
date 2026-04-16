@@ -11,10 +11,14 @@ use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\player\GameMode;
-use pocketmine\network\mcpe\protocol\CameraInstructionPacket;
 use pocketmine\network\mcpe\protocol\types\camera\CameraSetInstruction;
 use pocketmine\network\mcpe\protocol\types\camera\CameraSetInstructionRotation;
 use pocketmine\network\mcpe\protocol\types\camera\CameraSetInstructionEase;
+use pocketmine\network\mcpe\protocol\CameraInstructionPacket;
+use pocketmine\network\mcpe\protocol\types\camera\CameraFadeInstruction;
+use pocketmine\network\mcpe\protocol\types\camera\CameraFadeInstructionColor;
+use pocketmine\network\mcpe\protocol\types\camera\CameraFadeInstructionTime;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\types\ActorEvent;
@@ -32,26 +36,79 @@ class OpeningAnimation extends Animation
     public function doAnimation()
     {
         parent::doAnimation();
-
         $p = $this->getPlayer();
         if ($p === null) {
             return;
         }
         $p->setGamemode(GameMode::ADVENTURE());
         $p->extinguish();
+        $p->setMotion(new Vector3(0, -0.08, 0));
+        $this->pos = $p->getPosition()->add(0, 3, 0);
         // sembunyikan player
         $p->getEffects()->add(new EffectInstance(VanillaEffects::INVISIBILITY(), 100, 1, false));
-        // delay lanjut animation berikutnya (RunUpdate)
-        Main::getInstance()->getScheduler()->scheduleDelayedTask(
-            new RunUpdate($p, 2),
-            60
-        );
         // set awal
         $this->yaw = 180;
         $this->pitch = -40;
         // paksa posisi awal
         $p->teleport($p->getPosition(), $this->yaw, $this->pitch);
         $this->animationPhase = 0;
+        // delay lanjut animation berikutnya (RunUpdate)
+        Main::getInstance()->getScheduler()->scheduleDelayedTask(
+            new RunUpdate($p, 2),
+            60
+        );
+        $p->getEffects()->add(new EffectInstance(VanillaEffects::LEVITATION(), 60, 0));
+        // $p->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 100, 1));
+        $this->sendFade($p);
+        // $time = new CameraFadeInstructionTime(1.0, 3.0, 1.0);
+        // $color = new CameraFadeInstructionColor(0, 0, 0);
+        // $fade = new CameraFadeInstruction($time, $color);
+        // $pk = CameraInstructionPacket::create(null, null, $fade, null, null, null, null, null, null);
+        // $p->getNetworkSession()->sendDataPacket($pk);
+    }
+
+    public function sendFade(Player $p): void
+    {
+
+        // 🔴 langsung gelap (anti flash)
+        $p->getEffects()->add(new EffectInstance(
+            VanillaEffects::BLINDNESS(),
+            10, // 2 detik
+            1,
+            false
+        ));
+
+        // ⏳ delay sedikit biar smooth
+        Main::getInstance()->getScheduler()->scheduleDelayedTask(
+            new ClosureTask(function () use ($p) {
+
+                if (!$p->isOnline()) {
+                    return;
+                }
+
+                // 🎬 fade cinematic
+                $time = new CameraFadeInstructionTime(0.5, 1.2, 0.8);
+                $color = new CameraFadeInstructionColor(0, 0, 0);
+
+                $fade = new CameraFadeInstruction($time, $color);
+
+                $pk = CameraInstructionPacket::create(
+                    null,
+                    null,
+                    $fade,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                );
+
+                $p->getNetworkSession()->sendDataPacket($pk);
+
+            }),
+            5 // delay 5 tick (~0.25 detik)
+        );
     }
 
     public function onUpdate(): bool
@@ -61,20 +118,17 @@ class OpeningAnimation extends Animation
             return false;
         }
         switch ($this->animationPhase) {
-            // 🎬 Phase 0: kamera naik (lihat ke depan)
             case 0:
                 if ($this->pitch >= 0) {
                     $this->animationPhase = 1;
                     break;
                 }
                 $this->pitch += 0.5;
-                $p->teleport(
-                    $p->getPosition(),
-                    $this->yaw,
-                    $this->pitch
-                );
+                $p->teleport($p->getPosition(), $this->yaw, $this->pitch);
+                // if ($this->pitch >= -25) {
+                //     $p->getEffects()->remove(VanillaEffects::BLINDNESS());
+                // }
                 break;
-                // 🎯 Phase 1: selesai → restore player
             case 1:
                 $p->setGameRule('naturalregeneration', true);
                 $p->getEffects()->clear();
@@ -83,7 +137,6 @@ class OpeningAnimation extends Animation
                 $this->sendJoinUI($p);
                 return false;
         }
-
         return true;
     }
 

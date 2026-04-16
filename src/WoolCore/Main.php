@@ -38,6 +38,7 @@ use pocketmine\network\mcpe\protocol\types\ScorePacketEntry;
 use pocketmine\network\mcpe\protocol\SetScorePacket;
 use pocketmine\network\mcpe\protocol\SetDisplayObjectivePacket;
 use pocketmine\network\mcpe\protocol\RemoveObjectivePacket;
+use pocketmine\scheduler\ClosureTask;
 use WoolCore\Manager\FloatingText;
 use WoolCore\Task\Broadcaster;
 use WoolCore\Task\CallbackUpdate;
@@ -202,7 +203,7 @@ class Main extends PluginBase implements Listener
                     $p->sendMessage($notp);
                     return false;
                 }
-                if (!$p->isOp()) {
+                if (!$p->hasPermission("pocketmine.command.op")) {
                     $p->sendMessage($notperm);
                     return false;
                 }
@@ -237,7 +238,13 @@ class Main extends PluginBase implements Listener
     {
         $p = $e->getPlayer();
         $e->setJoinMessage("");
-        $p->teleport($this->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn());
+        // $p->teleport($this->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn());
+        $this->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($p) {
+            if ($p->isOnline()) {
+                $spawn = $this->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn();
+                $p->teleport($spawn->add(0.5, 3, -0.5));
+            }
+        }), 2); // delay 2 tick
         if (!$p instanceof SpecterPlayer) {
             $p->setGameRule('naturalregeneration', false);
             $p->actionAnimation(new OpeningAnimation($p));
@@ -245,7 +252,7 @@ class Main extends PluginBase implements Listener
         $name = $p->getName();
         foreach ($this->getServer()->getOnlinePlayers() as $allp) {
             if ($allp->getName() !== $p->getName()) {
-                if (!$p->isOp()) {
+                if (!$p->hasPermission("pocketmine.command.op")) {
                     $allp->sendMessage("§f§l[§6WC§f] §r§f{$p->getName()} §e§omasuk server§r§f!");
                 } else {
                     $allp->sendMessage("§f§l[§6WC§f] §r§f{$p->getName()} §e§omasuk server§r§f! §l(§9Staff§f)");
@@ -263,6 +270,7 @@ class Main extends PluginBase implements Listener
             $stats->setNested($lowerName.".build", 0);
             $stats->setNested($lowerName.".break", 0);
             $stats->setNested($lowerName.".time", time());
+            $stats->setNested($lowerName.".realname", $name);
             $stats->save();
         }
         $this->setTag($p);
@@ -351,13 +359,13 @@ class Main extends PluginBase implements Listener
     public function onPlayerQuit(PlayerQuitEvent $e)
     {
         $p = $e->getPlayer();
-        if (!$p->isOp()) {
+        if (!$p->hasPermission("pocketmine.command.op")) {
             $e->setQuitMessage("§f§l[§6WC§f] §r§f{$p->getName()} §e§okeluar server§r§f!");
         } else {
             $e->setQuitMessage("§f§l[§6WC§f] §r§f{$p->getName()} §e§okeluar server§r§f! §l(§9Staff§f)");
         }
         $this->removeBossBar($p);
-        unset($this->breakTimes[$p->getRawUniqueId()]);
+        unset($this->breakTimes[$p->getUniqueId()->toString()]);
     }
 
     public function onEntityDamage(EntityDamageEvent $e)
@@ -375,7 +383,7 @@ class Main extends PluginBase implements Listener
         $stats = $this->stats;
         $p = $e->getPlayer();
         $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
-        if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName() && !$p->isOp()) {
+        if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName() && !$p->hasPermission("pocketmine.command.op")) {
             $e->setCancelled();
         }
         if (!$e->isCancelled()) {
@@ -391,9 +399,10 @@ class Main extends PluginBase implements Listener
         $p = $e->getPlayer();
         if (!$e->getInstaBreak()) {
             do {
-                if (!isset($this->breakTimes[$uuid = $p->getRawUniqueId()])) {
+                $uuid = $p->getUniqueId()->toString();
+                if (!isset($this->breakTimes[$uuid])) {
                     foreach ($this->getServer()->getOnlinePlayers() as $op) {
-                        if ($op->isOp()) {
+                        if ($p->hasPermission("pocketmine.command.op")) {
                             $op->sendPopup("§c§oPlayer dengan nama §r§f{$p->getName()} §c§omencoba untuk menghancurkan tanpa event break§r§f, §e§oharap curigai§r§f!");
                         }
                     }
@@ -416,10 +425,10 @@ class Main extends PluginBase implements Listener
                     }
                 }
                 $expectedTime -= 1;
-                $actualTime = ceil(microtime(true) * 20) - $this->breakTimes[$uuid = $p->getRawUniqueId()];
+                $actualTime = ceil(microtime(true) * 20) - $this->breakTimes[$uuid];
                 if ($actualTime < $expectedTime) {
                     foreach ($this->getServer()->getOnlinePlayers() as $op) {
-                        if ($op->isOp()) {
+                        if ($p->hasPermission("pocketmine.command.op")) {
                             $op->sendPopup("§c§oPlayer dengan nama §r§f{$p->getName()} §c§omencoba untuk menghancurkan block terlalu cepat§r§f, §c§oharap curigai§r§f!");
                         }
                     }
@@ -430,7 +439,7 @@ class Main extends PluginBase implements Listener
             } while (false);
         }
         $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
-        if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName() && !$p->isOp()) {
+        if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName() && !$p->hasPermission("pocketmine.command.op")) {
             $e->setCancelled();
         }
         if (!$e->isCancelled()) {
@@ -465,7 +474,7 @@ class Main extends PluginBase implements Listener
         $stats = $this->stats;
         $p = $e->getPlayer();
         $defaultLevel = $this->getServer()->getWorldManager()->getDefaultWorld();
-        if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName() && !$p->isOp()) {
+        if ($defaultLevel->getFolderName() === $p->getWorld()->getFolderName() && !$p->hasPermission("pocketmine.command.op")) {
             $e->setCancelled();
         }
     }
@@ -486,7 +495,7 @@ class Main extends PluginBase implements Listener
     {
         $p = $e->getPlayer();
         if ($e->getAction() === PlayerInteractEvent::LEFT_CLICK_BLOCK) {
-            $this->breakTimes[$p->getRawUniqueId()] = floor(microtime(true) * 20);
+            $this->breakTimes[$p->getUniqueId()->toString()] = floor(microtime(true) * 20);
         }
         $block = $e->getBlock();
         if (isset($this->leaderboardset[$p->getName()])) {
@@ -731,7 +740,8 @@ class Main extends PluginBase implements Listener
                 arsort($data);
                 $i = 0;
                 foreach ($data as $name => $many) {
-                    $message .= "§r§e".($i + 1)."§f). §6§o".$name." §f=> ".$many.$prefix."\n";
+                    $realName = $this->stats->getNested($name.".realname") ?? $name;
+                    $message .= "§r§e".($i + 1)."§f). §6§o".$realName." §f=> ".$many.$prefix."\n";
                     if ($i >= 9) {
                         break;
                     }
