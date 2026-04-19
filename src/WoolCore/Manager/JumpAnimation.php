@@ -27,7 +27,7 @@ class JumpAnimation extends Animation
         $p = $this->getPlayer();
         $p->setGamemode(GameMode::ADVENTURE());
         $p->extinguish();
-        $p->addTitle("§e§oTeleporting§r§f...", "");
+        $p->sendTitle("§e§oTeleporting§r§f...", "");
         $p->getEffects()->add(new EffectInstance(VanillaEffects::INVISIBILITY(), 999, 10, false));
         $this->pos = $p->getPosition()->asVector3()->add(0, 1, 0);
         $this->startY = $this->pos->y;

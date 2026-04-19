@@ -39,6 +39,7 @@ use pocketmine\network\mcpe\protocol\SetScorePacket;
 use pocketmine\network\mcpe\protocol\SetDisplayObjectivePacket;
 use pocketmine\network\mcpe\protocol\RemoveObjectivePacket;
 use pocketmine\scheduler\ClosureTask;
+use pocketmine\world\Position;
 use WoolCore\Manager\FloatingText;
 use WoolCore\Task\Broadcaster;
 use WoolCore\Task\CallbackUpdate;
@@ -81,6 +82,10 @@ class Main extends PluginBase implements Listener
         if (!$wm->loadWorld("transfare")) {
             $wm->generateWorld("transfare", WorldCreationOptions::create());
             $wm->loadWorld("transfare");
+        }
+        if (!$wm->loadWorld("Survival")) {
+            $wm->generateWorld("Survival", WorldCreationOptions::create());
+            $wm->loadWorld("Survival");
         }
         $this->getScheduler()->scheduleRepeatingTask(new Broadcaster($this), 30 * 20);
         $this->getScheduler()->scheduleRepeatingTask(new CallbackUpdate([$this, "onUpdate"], []), 1);
@@ -160,7 +165,17 @@ class Main extends PluginBase implements Listener
                     $p->sendMessage($notp);
                     return false;
                 }
-                $p->teleport($this->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn());
+                $wm = $this->getServer()->getWorldManager();
+                // ambil default world dari server.properties (level-name)
+                $world = $wm->getDefaultWorld();
+                // kalo belum keload (jarang, tapi aman)
+                if ($world === null) {
+                    $wm->loadWorld($this->getServer()->getConfigGroup()->getProperty("level-name"));
+                    $world = $wm->getDefaultWorld();
+                }
+                $spawn = $world->getSafeSpawn();
+                $pos = Position::fromObject($spawn->add(0.5, 3, -0.5), $world);
+                $p->saveTeleport($pos);
                 $p->sendMessage("§f§l[§6WC§f] §r§e§oAnda berhasil teleport ke Lobby server§r§f.");
                 break;
             }
@@ -241,44 +256,42 @@ class Main extends PluginBase implements Listener
         // $p->teleport($this->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn());
         $this->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($p) {
             if ($p->isOnline()) {
-                $spawn = $this->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn();
-                $p->teleport($spawn->add(0.5, 3, -0.5));
-            }
-        }), 2); // delay 2 tick
-        if (!$p instanceof SpecterPlayer) {
-            $p->setGameRule('naturalregeneration', false);
-            $p->actionAnimation(new OpeningAnimation($p));
-        }
-        $name = $p->getName();
-        foreach ($this->getServer()->getOnlinePlayers() as $allp) {
-            if ($allp->getName() !== $p->getName()) {
-                if (!$p->hasPermission("pocketmine.command.op")) {
-                    $allp->sendMessage("§f§l[§6WC§f] §r§f{$p->getName()} §e§omasuk server§r§f!");
-                } else {
-                    $allp->sendMessage("§f§l[§6WC§f] §r§f{$p->getName()} §e§omasuk server§r§f! §l(§9Staff§f)");
+                if (!$p instanceof SpecterPlayer) {
+                    $p->setGameRule('naturalregeneration', false);
+                    $p->actionAnimation(new OpeningAnimation($p));
+                }
+                $name = $p->getName();
+                foreach ($this->getServer()->getOnlinePlayers() as $allp) {
+                    if ($allp->getName() !== $p->getName()) {
+                        if (!$p->hasPermission("pocketmine.command.op")) {
+                            $allp->sendMessage("§f§l[§6WC§f] §r§f{$p->getName()} §e§omasuk server§r§f!");
+                        } else {
+                            $allp->sendMessage("§f§l[§6WC§f] §r§f{$p->getName()} §e§omasuk server§r§f! §l(§9Staff§f)");
+                        }
+                    }
+                }
+                $lowerName = strtolower($name);
+                if (!$this->stats->exists($lowerName)) {
+                    $stats = $this->stats;
+                    $stats->setNested($lowerName.".level", 1);
+                    $stats->setNested($lowerName.".exp", 0);
+                    $stats->setNested($lowerName.".expcount", 47);
+                    $stats->setNested($lowerName.".kill", 0);
+                    $stats->setNested($lowerName.".death", 0);
+                    $stats->setNested($lowerName.".build", 0);
+                    $stats->setNested($lowerName.".break", 0);
+                    $stats->setNested($lowerName.".time", time());
+                    $stats->setNested($lowerName.".realname", $name);
+                    $stats->save();
+                }
+                $this->setTag($p);
+                $particles = $this->getParticles();
+                foreach ($particles as $type => $particle) {
+                    $leaderboard = $this->getLeaderBoard($type);
+                    $particle->setText($leaderboard);
                 }
             }
-        }
-        $lowerName = strtolower($name);
-        if (!$this->stats->exists($lowerName)) {
-            $stats = $this->stats;
-            $stats->setNested($lowerName.".level", 1);
-            $stats->setNested($lowerName.".exp", 0);
-            $stats->setNested($lowerName.".expcount", 47);
-            $stats->setNested($lowerName.".kill", 0);
-            $stats->setNested($lowerName.".death", 0);
-            $stats->setNested($lowerName.".build", 0);
-            $stats->setNested($lowerName.".break", 0);
-            $stats->setNested($lowerName.".time", time());
-            $stats->setNested($lowerName.".realname", $name);
-            $stats->save();
-        }
-        $this->setTag($p);
-        $particles = $this->getParticles();
-        foreach ($particles as $type => $particle) {
-            $leaderboard = $this->getLeaderBoard($type);
-            $particle->setText($leaderboard);
-        }
+        }), 10); // delay 10 tick / 0,5 detik
     }
 
     public function onPlayerMove(PlayerMoveEvent $e)

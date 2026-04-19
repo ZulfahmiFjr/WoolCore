@@ -8,7 +8,14 @@ use pocketmine\network\mcpe\protocol\types\BoolGameRule;
 use pocketmine\player\GameMode;
 use pocketmine\world\Position;
 use pocketmine\network\mcpe\protocol\ChangeDimensionPacket;
+use pocketmine\network\mcpe\protocol\PlayerActionPacket;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
+use pocketmine\network\mcpe\protocol\types\PlayerAction;
+use pocketmine\network\mcpe\protocol\PlayStatusPacket;
+use pocketmine\network\mcpe\protocol\types\BlockPosition;
+use pocketmine\scheduler\ClosureTask;
+use pocketmine\world\format\Chunk;
+use pocketmine\world\World;
 use WoolCore\Manager\Animation;
 use WoolCore\Task\RemoveScreen;
 
@@ -50,15 +57,59 @@ class PlayerSession extends Player
         $this->getNetworkSession()->sendDataPacket($pk);
     }
 
-    public function saveTeleport(Position $position)
+    // public function saveTeleport(Position $target)
+    // {
+    //     $session = $this->getNetworkSession();
+    //     $this->teleport(Main::getInstance()->getServer()->getWorldManager()->getWorldByName("transfare")->getSafeSpawn());
+    //     $pk = new ChangeDimensionPacket();
+    //     $pk->position = Main::getInstance()->getServer()->getWorldManager()->getWorldByName("transfare")->getSafeSpawn();
+    //     $pk->dimension = DimensionIds::THE_END;
+    //     $pk->respawn = false;
+    //     $session->sendDataPacket($pk);
+    //     $this->setNoClientPredictions(true);
+    //     // Main::getInstance()->getScheduler()->scheduleDelayedTask(new RemoveScreen($this, $position), 20);
+    //     Main::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($target, $session){
+    //         // teleport setelah client siap
+    //         $this->teleport($target);
+    //         // STEP 3: balik dimension
+    //         $pk = new ChangeDimensionPacket();
+    //         $pk->dimension = DimensionIds::OVERWORLD;
+    //         $pk->position = $target;
+    //         $pk->respawn = false; // 🔥 WAJIB FALSE
+    //         $session->sendDataPacket($pk);
+    //         $this->setNoClientPredictions(false);
+    //         // STEP 4: spawn (UNLOCK CLIENT)
+    //         $session->sendDataPacket(PlayStatusPacket::create(PlayStatusPacket::PLAYER_SPAWN));
+    //     }), 10);
+    // }
+
+
+    public function saveTeleport(Position $target)
     {
-        $this->teleport(Main::getInstance()->getServer()->getWorldManager()->getWorldByName("transfare")->getSafeSpawn());
-        $pk = new ChangeDimensionPacket();
-        $pk->position = Main::getInstance()->getServer()->getWorldManager()->getWorldByName("transfare")->getSafeSpawn();
-        $pk->dimension = DimensionIds::THE_END;
-        $pk->respawn = true;
-        $this->getNetworkSession()->sendDataPacket($pk);
-        Main::getInstance()->getScheduler()->scheduleDelayedTask(new RemoveScreen($this, $position), 20);
+        $session = $this->getNetworkSession();
+        $world = $target->getWorld();
+        $pos = $this->getPosition();
+        $blockPos = BlockPosition::fromVector3($pos);
+        // loading screen (END)
+        $session->sendDataPacket(ChangeDimensionPacket::create(DimensionIds::THE_END, $pos, false, null));
+        // ACK
+        $session->sendDataPacket(PlayerActionPacket::create($this->getId(), PlayerAction::DIMENSION_CHANGE_ACK, $blockPos, $blockPos, 0));
+        // load chunk target
+        $chunkX = $target->getFloorX() >> 4;
+        $chunkZ = $target->getFloorZ() >> 4;
+        $world->orderChunkPopulation($chunkX, $chunkZ, null)->onCompletion(
+            // berhasil
+            function (Chunk $chunk) use ($target) {
+                // delay biar loading kerasa
+                Main::getInstance()->getScheduler()->scheduleDelayedTask(new RemoveScreen($this, $target), 40);
+            },
+            // gagal
+            function () {
+                if ($this->isConnected()) {
+                    $this->kick("Chunk failed to load (anti stuck)");
+                }
+            }
+        );
     }
 
     public function onUpdate($tick): bool
@@ -111,7 +162,7 @@ class PlayerSession extends Player
                 $this->delayTicks += 1;
                 $pl->sendBossPacket($this, '', $this->loopTicks, 100, 4);
             } else {
-                if ($this->getGamemode() !== 0 && !$this->isOp() && !$this->hasPermission("feature.creative")) {
+                if ($this->getGamemode() !== 0 && !$this->hasPermission("pocketmine.command.op") && !$this->hasPermission("feature.creative")) {
                     $this->setGamemode(GameMode::SURVIVAL());
                 }
                 $percent = round(($pl->getExp($this) / $pl->getExpCount($this)) * 100);

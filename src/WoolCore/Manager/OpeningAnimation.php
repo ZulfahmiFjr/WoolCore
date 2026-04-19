@@ -19,6 +19,7 @@ use pocketmine\network\mcpe\protocol\types\camera\CameraFadeInstruction;
 use pocketmine\network\mcpe\protocol\types\camera\CameraFadeInstructionColor;
 use pocketmine\network\mcpe\protocol\types\camera\CameraFadeInstructionTime;
 use pocketmine\scheduler\ClosureTask;
+use pocketmine\world\Position;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\types\ActorEvent;
@@ -58,6 +59,8 @@ class OpeningAnimation extends Animation
             60
         );
         $p->getEffects()->add(new EffectInstance(VanillaEffects::LEVITATION(), 60, 0));
+        $spawn = Main::getInstance()->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn();
+        $p->teleport($spawn->add(0.5, 3, -0.5));
         // $p->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 100, 1));
         $this->sendFade($p);
         // $time = new CameraFadeInstructionTime(1.0, 3.0, 1.0);
@@ -69,43 +72,19 @@ class OpeningAnimation extends Animation
 
     public function sendFade(Player $p): void
     {
-
-        // 🔴 langsung gelap (anti flash)
-        $p->getEffects()->add(new EffectInstance(
-            VanillaEffects::BLINDNESS(),
-            10, // 2 detik
-            1,
-            false
-        ));
-
-        // ⏳ delay sedikit biar smooth
+        $p->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 10, 1, false));
+        // delay sedikit biar smooth
         Main::getInstance()->getScheduler()->scheduleDelayedTask(
             new ClosureTask(function () use ($p) {
-
                 if (!$p->isOnline()) {
                     return;
                 }
-
-                // 🎬 fade cinematic
+                // fade cinematic
                 $time = new CameraFadeInstructionTime(0.5, 1.2, 0.8);
                 $color = new CameraFadeInstructionColor(0, 0, 0);
-
                 $fade = new CameraFadeInstruction($time, $color);
-
-                $pk = CameraInstructionPacket::create(
-                    null,
-                    null,
-                    $fade,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-                );
-
+                $pk = CameraInstructionPacket::create(null, null, $fade, null, null, null, null, null, null);
                 $p->getNetworkSession()->sendDataPacket($pk);
-
             }),
             5 // delay 5 tick (~0.25 detik)
         );
@@ -124,7 +103,10 @@ class OpeningAnimation extends Animation
                     break;
                 }
                 $this->pitch += 0.5;
-                $p->teleport($p->getPosition(), $this->yaw, $this->pitch);
+                $pos = $p->getPosition();
+                $defaultWorld = Main::getInstance()->getServer()->getWorldManager()->getDefaultWorld();
+                $newPos = new Position($pos->getX(), $pos->getY(), $pos->getZ(), $defaultWorld);
+                $p->teleport($newPos, $this->yaw, $this->pitch);
                 // if ($this->pitch >= -25) {
                 //     $p->getEffects()->remove(VanillaEffects::BLINDNESS());
                 // }
